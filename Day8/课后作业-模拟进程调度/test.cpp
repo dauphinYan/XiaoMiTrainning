@@ -56,6 +56,7 @@ void FCFS(vector<Process> &process)
     int turnoverTime = 0;
     for (auto &i : process)
     {
+
         if (currentTime < i.getArrivalTime())
             currentTime = i.getArrivalTime();
         currentTime += i.getBurstTime();
@@ -68,16 +69,47 @@ void FCFS(vector<Process> &process)
 // 短作业优先
 void SJF(vector<Process> &process)
 {
-    sort(process.begin(), process.end(), compareBurst);
+    // sort(process.begin(), process.end(), compareBurst);
+    // int currentTime = 0;
+    // int turnoverTime = 0;
+    // for (auto &i : process)
+    // {
+    //     if (currentTime < i.getArrivalTime())
+    //         currentTime = i.getArrivalTime();
+    //     currentTime += i.getBurstTime();
+    //     cout << "进程ID:" << i.getId() << "  完成时间：" << currentTime << "\n";
+    //     turnoverTime += (currentTime - i.getArrivalTime());
+    // }
+    // cout << "平均调度时间：" << calculateTime(turnoverTime, process.size()) << "\n";
+
+    sort(process.begin(), process.end(), compareArrival);
     int currentTime = 0;
     int turnoverTime = 0;
-    for (auto &i : process)
+    vector<Process> tmpProcess = process;
+
+    while (!tmpProcess.empty())
     {
-        if (currentTime < i.getArrivalTime())
-            currentTime = i.getArrivalTime();
-        currentTime += i.getBurstTime();
-        cout << "进程ID:" << i.getId() << "  完成时间：" << currentTime << "\n";
-        turnoverTime += (currentTime - i.getArrivalTime());
+        int index = -1;
+        for (int i = 0; i < tmpProcess.size(); ++i)
+        {
+            if (tmpProcess[i].getArrivalTime() <= currentTime && (index == -1 || tmpProcess[i].getBurstTime() < tmpProcess[index].getBurstTime()))
+            {
+                index = i;
+            }
+        }
+
+        if (index == -1)
+        {
+            currentTime = tmpProcess[0].getArrivalTime();
+            continue;
+        }
+
+        Process &shortestProcess = tmpProcess[index];
+        currentTime += shortestProcess.getBurstTime();
+        cout << "进程ID:" << shortestProcess.getId() << "  完成时间：" << currentTime << "\n";
+        turnoverTime += (currentTime - shortestProcess.getArrivalTime());
+
+        tmpProcess.erase(tmpProcess.begin() + index);
     }
     cout << "平均调度时间：" << calculateTime(turnoverTime, process.size()) << "\n";
 }
@@ -87,8 +119,8 @@ int main()
     vector<Process> process;
     process.push_back(Process(1, 0, 10));
     process.push_back(Process(2, 20, 20));
-    process.push_back(Process(3, 30, 40));
-    process.push_back(Process(4, 100, 5));
+    process.push_back(Process(3, 30, 10));
+    process.push_back(Process(4, 20, 5));
 
     cout << "FCFS"
          << "\n";
